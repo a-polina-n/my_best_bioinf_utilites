@@ -44,8 +44,7 @@ def in_gc_bounds(gc: float,
         return low <= gc <= high
 
 
-def in_len_bounds(length: int, 
-              bounds: float | tuple[float, float]) -> bool:
+def in_len_bounds(length: int, bounds: float | tuple[float, float]) -> bool:
     """
     Checks if the given sequence string is of an allowed GC length.
 
@@ -61,5 +60,35 @@ def in_len_bounds(length: int,
     elif isinstance(bounds, tuple):
         low, high = bounds
         return low <= length <= high
+
+
+def fastq_helper(input_fastq: str, 
+                output_path: str,
+                gc_bounds: tuple[float, float] = (0, 100), 
+                length_bounds: tuple[int, int] =(0, 2**32), 
+                quality_threshold: float = 0):
+    """
+    
+    
+    """
+    with open(input_fastq, "r") as inp, open(output_path, "w") as out:
+        while True:
+            header = inp.readline()
+            if not header:
+                break
+
+            sequence = inp.readline()
+            sep = inp.readline()
+            quality = inp.readline()
+            
+            gc = calc_gc(sequence)
+            length = len(sequence)
+            mean_q = calc_mean_quality(quality)
+            
+            if (in_gc_bounds(gc, gc_bounds) and in_len_bounds(length, length_bounds) and mean_q >= quality_threshold):
+                out.write(header)
+                out.write(sequence)
+                out.write(sep)
+                out.write(quality)
 
 
